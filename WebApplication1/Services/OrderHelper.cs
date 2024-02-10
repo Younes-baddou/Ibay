@@ -1,9 +1,13 @@
-﻿using System.Diagnostics.Eventing.Reader;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics.Eventing.Reader;
+using WebApplication1.Models;
 
 namespace WebApplication1.Services
 {
     public class OrderHelper
-        {
+    {
         public static decimal ShippingFee { get; } = 5;
         public static Dictionary<string, string> PaymentMethods { get; } = new()
         {
@@ -18,26 +22,26 @@ namespace WebApplication1.Services
          };
         public static List<string> OrderStatuses { get; } = new()
           {
-        "Created" , "Accepted","Canceled", "Shiped", "Delivered" , "Returned"
+        "Created" , "Accepted" , "Canceled" , "Shipped", "Delivered" , "Returned"
           };
-        public static Dictionary<int ,int > GetProductDictionary(string productionIdentifiers)
+        public static Dictionary<int, int> GetProductDictionary(string productionIdentifiers)
         {
-            var productDictionary = new Dictionary<int,int>();
-            if (productionIdentifiers.Length > 0) 
+            var productDictionary = new Dictionary<int, int>();
+            if (productionIdentifiers.Length > 0)
             {
                 string[] productIdArray = productionIdentifiers.Split(',');
-                foreach(var productId in productIdArray)
+                foreach (var productId in productIdArray)
                 {
                     try
                     {
                         int id = int.Parse(productId);
                         if (productDictionary.ContainsKey(id))
-                         {
+                        {
                             productDictionary[id] += 1;
-                         }
+                        }
                         else
                         {
-                            productDictionary.Add(id,1);
+                            productDictionary.Add(id, 1);
                         }
                     }
                     catch (Exception) { }
@@ -45,5 +49,7 @@ namespace WebApplication1.Services
             }
             return productDictionary;
         }
+
     }
+    
 }

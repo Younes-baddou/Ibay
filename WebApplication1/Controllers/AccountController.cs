@@ -178,7 +178,7 @@ namespace WebApplication1.Controllers
         [HttpGet("Profile")]
         public IActionResult GetProfile() 
         {
-            int id = GetUserId();
+            int id = JwtReader.GetUserId(User);
 
 
             var user = context.Users.Find(id);
@@ -204,7 +204,7 @@ namespace WebApplication1.Controllers
         [HttpPut("UpdateProfile")]
         public IActionResult UpdateProfile(UserProfileUpdateDto userProfileUpdateDto) 
         {
-            int id = GetUserId();
+            int id = JwtReader.GetUserId(User);
             var user = context.Users.Find(id);
             if (user== null )
             {
@@ -239,7 +239,7 @@ namespace WebApplication1.Controllers
         [HttpPut("UpdatePassword")]
         public IActionResult UpdatePassword([Required, MinLength(8), MaxLength(100)] string password)
         {
-            int id = GetUserId();
+            int id = JwtReader.GetUserId(User);
 
             var user = context.Users.Find(id);
             if( user == null )
@@ -256,38 +256,6 @@ namespace WebApplication1.Controllers
             context.SaveChanges();
 
             return Ok();
-        }
-
-        private int GetUserId() 
-        {
-            var identity = User.Identity as ClaimsIdentity;
-            if (identity == null)
-            {
-                return 0;
-
-            }
-
-            var claim = identity.Claims.FirstOrDefault(c => c.Type.ToLower() == "id");
-            if (claim == null)
-            {
-                return 0;
-            }
-            int id;
-
-            try
-            {
-                id = int.Parse(claim.Value);
-            }
-            catch (Exception)
-            {
-                return 0;
-            }
-            var user = context.Users.Find(id);
-            if (user == null)
-            {
-                return 0;
-            }
-            return id;
         }
 
         /* [Authorize]

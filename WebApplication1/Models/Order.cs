@@ -26,10 +26,10 @@ namespace WebApplication1.Models
 
 
 
-        //navugation Properties 
+        //navigation Properties 
         public User User { get; set; } = null!;
 
 
-        public List<OrderItem> OrderItem { get; set; } = new() ;
+        public List<OrderItem> OrderItems { get; set; } = new() ;
     }
 }
