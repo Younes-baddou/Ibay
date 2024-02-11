@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using WebApplication1.Models;
 using WebApplication1.Services;
+using System.Security.Claims;
 
 namespace WebApplication1.Controllers
 {
@@ -169,10 +170,15 @@ namespace WebApplication1.Controllers
             return Ok(product);
         }
 
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin,seller")]
         [HttpPost]
         public IActionResult CreateProduct([FromForm] ProductDto productDto)
         {
+            if (!User.IsInRole("admin") && !User.IsInRole("seller"))
+            {
+                return Forbid("You are not allowed to create products.");
+            }
+
             if (!listCategories.Contains(productDto.Category))
             {
                 ModelState.AddModelError("Category", "Please select a valid category");
@@ -215,10 +221,14 @@ namespace WebApplication1.Controllers
         }
 
 
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "admin , seller")]
         [HttpPut("{id}")]
         public IActionResult UpdateProduct(int id, [FromForm] ProductDto productDto)
         {
+            if (!User.IsInRole("admin") && !User.IsInRole("seller"))
+            {
+                return Forbid("You are not allowed to update products.");
+            }
             if (!listCategories.Contains(productDto.Category))
             {
                 ModelState.AddModelError("Category", "Please select a valid category");
@@ -256,14 +266,20 @@ namespace WebApplication1.Controllers
 
             return Ok(product);
         }
-        [Authorize(Roles = "admin")]
+
+        [Authorize(Roles = "admin , seller")]
         [HttpDelete("{id}")]
         public IActionResult DeleteProduct(int id)
         {
+            if (!User.IsInRole("admin") && !User.IsInRole("seller"))
+            {
+                return Forbid("You are not allowed to delete products.");
+            }
+
             var product = context.Products.Find(id);
             if (product == null)
             {
-                return NotFound();
+                return NotFound("Product not found");
             }
             //delete the image on the server 
             string imagesFolder = env.WebRootPath + "/images/products/";
@@ -273,7 +289,7 @@ namespace WebApplication1.Controllers
             context.Products.Remove(product);
             context.SaveChanges();
 
-            return Ok();
+            return Ok("the product is deleted succesfully");
         }
     }
 }
