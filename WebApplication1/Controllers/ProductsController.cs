@@ -213,6 +213,8 @@ namespace WebApplication1.Controllers
 
             return Ok(product);
         }
+
+
         [Authorize(Roles = "admin")]
         [HttpPut("{id}")]
         public IActionResult UpdateProduct(int id, [FromForm] ProductDto productDto)

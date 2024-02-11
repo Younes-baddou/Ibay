@@ -114,7 +114,7 @@ namespace WebApplication1.Controllers
             return Ok(response);
         }
 
-        /* [HttpPost("ForgotPassword")]
+         [HttpPost("ForgotPassword")]
         public IActionResult ForgotPassword(string email) 
         {
             var user = context.Users.FirstOrDefault(u => u.Email == email);
@@ -148,6 +148,7 @@ namespace WebApplication1.Controllers
                 "Please copy the following token and paste it the Password Reset Form:\n" +
                 token + "\n\n" +
                 "Best Regards\n";
+            return Ok();
         }
 
         [HttpPost("ResetPassword")]
@@ -155,6 +156,12 @@ namespace WebApplication1.Controllers
         {
             var pwdReset = context.PasswordResets.FirstOrDefault(r => r.Token ==token);
             if(pwdReset == null) 
+            {
+                ModelState.AddModelError("Token", "Wrong or Expired Token");
+                return BadRequest(ModelState);
+            }
+            var user = context.Users.FirstOrDefault(u => u.Email == pwdReset.Email);
+            if (user == null)
             {
                 ModelState.AddModelError("Token", "Wrong or Expired Token");
                 return BadRequest(ModelState);
@@ -172,7 +179,7 @@ namespace WebApplication1.Controllers
             context.SaveChanges();
             return Ok();
 
-        }*/
+        }
 
         [Authorize]
         [HttpGet("Profile")]
@@ -258,57 +265,46 @@ namespace WebApplication1.Controllers
             return Ok();
         }
 
-        /* [Authorize]
-         [HttpGet("AuthorizeAuthenticatedUsers")]
-         public IActionResult AuthorizedAuthenticatedUsers()
-         {
-             return Ok("You are Authorized");
-         }
-
-         [Authorize(Roles = "admin" )]
-         [HttpGet("AuthorizeAdmin")]
-         public IActionResult AuthorizeAdmin()
-         {
-             return Ok("You are Authorized");
-         }
-
-
-         [Authorize(Roles = "admin,seller")]
-         [HttpGet("AuthorizeAdminAndSeller")]
-         public IActionResult AuthorizeAdminAndSeller()
-         {
-             return Ok("You are Authorized");
-         }*/
-
-       /* [Authorize]
-        [HttpGet("GetTokenClaims")]
-        public IActionResult GetTokenClaims()
+        [Authorize]
+        [HttpDelete("DeleteAccount")]
+        public IActionResult DeleteAccount(int? userIdToDelete = null)
         {
-            var identity = User.Identity as ClaimsIdentity;
-            if (identity != null) 
+            var currentUserId = JwtReader.GetUserId(User); // ID de l'utilisateur actuel
+
+            // Si aucun ID spécifique n'est fourni, ou si l'ID fourni est celui de l'utilisateur actuel, procéder à la suppression
+            if (!userIdToDelete.HasValue || userIdToDelete.Value == currentUserId)
             {
-                Dictionary<string, string> claims = new Dictionary<string, string>();
-                foreach (Claim claim in identity.Claims) 
+                var userToDelete = context.Users.Find(currentUserId);
+                if (userToDelete == null)
                 {
-                    claims.Add(claim.Type,claim.Value);
+                    return NotFound("User not found.");
                 }
 
-                return Ok(claims);
+                context.Users.Remove(userToDelete);
+                context.SaveChanges();
+
+                // Considérez d'ajouter une logique ici pour déconnecter l'utilisateur si nécessaire
+                return Ok("Your account has been successfully deleted.");
             }
-            return Ok();
-        }*/
+            else if (User.IsInRole("admin"))
+            {
+                // L'administrateur essaie de supprimer un autre compte
+                var userToDelete = context.Users.Find(userIdToDelete.Value);
+                if (userToDelete == null)
+                {
+                    return NotFound($"User with ID {userIdToDelete.Value} not found.");
+                }
 
-
-        /*
-        [HttpGet("TestToken")]
-        public IActionResult TestToken()
-        {
-            User user = new User() { Id = 2, Role = "admin" };
-            string jwt = CreateJWToken(user);
-            var response = new {JWToken = jwt}; 
-            return Ok(response);
-        }*/
-
+                context.Users.Remove(userToDelete);
+                context.SaveChanges();
+                return Ok($"User with ID {userIdToDelete.Value} has been successfully deleted.");
+            }
+            else
+            {
+                // Un utilisateur non-admin essaie de supprimer un compte qui n'est pas le sien
+                return StatusCode(StatusCodes.Status403Forbidden, new { message = "You are not allowed to delete other users' accounts." });
+            }
+        }
 
 
 

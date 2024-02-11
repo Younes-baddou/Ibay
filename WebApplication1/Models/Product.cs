@@ -5,7 +5,7 @@ namespace WebApplication1.Models
 {
     public class Product
     {
-
+        public int UserId {  get; set; }
         public int Id { get; set; }
 
         [MaxLength(100)]
