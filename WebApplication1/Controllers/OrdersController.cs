@@ -176,7 +176,7 @@ namespace WebApplication1.Controllers
             if (orderStatus != null && !OrderHelper.OrderStatuses.Contains(orderStatus))
             {
                 //the payment status is not valid
-                ModelState.AddModelError("Payment Status", "The Payment Status is not valid");
+                ModelState.AddModelError("Order Status", "The Order Status is not valid");
                 return BadRequest(ModelState);
             }
             var order = context.Orders.Find(id);
